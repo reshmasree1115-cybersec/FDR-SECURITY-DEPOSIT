@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AICTE Security Deposit / FDR Management Portal – Prototype</title>
+<style>
+:root{--ink:#14213d;--ink2:#3a4663;--line:#d9dde6;--bg:#f5f6f9;--card:#fff;--acc:#e07a1f;--ok:#1d7a4d;--warn:#b7791f;--bad:#b42318;--info:#2456a6;--mut:#6b7488}
+*{box-sizing:border-box}body{margin:0;font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--ink);color:#fff;display:flex;align-items:center;gap:16px;padding:10px 20px;flex-wrap:wrap}
+header h1{font-size:16px;margin:0;font-weight:600}header small{color:#aeb8d1;display:block;font-weight:400}
+.sp{flex:1}select,input,button{font:inherit}
+header select{background:#22325a;color:#fff;border:1px solid #3d4d7a;border-radius:6px;padding:6px 8px}
+nav{display:flex;gap:4px;padding:0 20px;background:#fff;border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{background:none;border:0;padding:12px 14px;cursor:pointer;color:var(--ink2);border-bottom:3px solid transparent;white-space:nowrap}
+nav button.on{color:var(--ink);border-color:var(--acc);font-weight:600}
+nav button:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--info);outline-offset:1px}
+main{max-width:1180px;margin:0 auto;padding:20px}
+h2{font-size:18px;margin:0 0 12px}
+.grid{display:grid;gap:12px}.k6{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.two{grid-template-columns:2fr 1fr}
+@media(max-width:800px){.two{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px}
+.kpi{cursor:pointer;text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:12px 14px;border-left:4px solid var(--c,var(--ink))}
+.kpi b{display:block;font-size:26px;line-height:1.1}.kpi span{color:var(--mut)}
+.pill{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
+.Active{background:#e3f4ea;color:var(--ok)}.Expiring{background:#fdf0d5;color:var(--warn)}.Matured{background:#fde4e1;color:var(--bad)}
+.Released{background:#e8ebf2;color:var(--ink2)}.Pending{background:#e3ecfb;color:var(--info)}
+.v-bank{color:var(--ok)}.v-inst{color:var(--warn)}.v-flag{color:var(--bad)}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--mut);font-weight:600}tbody tr{cursor:pointer}tbody tr:hover{background:#f0f3f9}
+.tw{overflow-x:auto}
+.bar{display:flex;align-items:flex-end;gap:10px;height:130px;padding-top:8px}
+.bar div{flex:1;text-align:center;font-size:12px;color:var(--mut)}.bar i{display:block;background:var(--ink);border-radius:4px 4px 0 0;margin-bottom:4px;min-height:2px}
+.btn{background:var(--ink);color:#fff;border:0;border-radius:6px;padding:7px 14px;cursor:pointer}
+.btn.s{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.a{background:var(--acc)}.btn.d{background:var(--bad)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+input,select{border:1px solid var(--line);border-radius:6px;padding:7px 9px;background:#fff;min-width:0}
+label{display:block;font-size:12px;color:var(--mut);margin-bottom:10px}label input,label select{display:block;width:100%;margin-top:3px;font-size:14px;color:var(--ink)}
+.alert{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}.alert:last-child{border:0}
+.dot{width:9px;height:9px;border-radius:50%;margin-top:6px;flex:none}
+.drawer{position:fixed;inset:0 0 0 auto;width:min(480px,100%);background:#fff;box-shadow:-8px 0 30px #0003;padding:20px;overflow:auto;transform:translateX(100%);transition:transform .2s;z-index:5}
+.drawer.open{transform:none}
+.modal{position:fixed;inset:0;background:#0006;display:none;align-items:center;justify-content:center;z-index:6;padding:12px}
+.modal.open{display:flex}.modal .card{width:min(460px,100%);max-height:92vh;overflow:auto}
+dl{display:grid;grid-template-columns:130px 1fr;gap:4px 10px;margin:10px 0}dt{color:var(--mut)}dd{margin:0}
+.tl{border-left:2px solid var(--line);margin:8px 0 0 5px;padding-left:14px}.tl p{margin:0 0 10px;position:relative}
+.tl p:before{content:"";position:absolute;left:-20px;top:6px;width:8px;height:8px;border-radius:50%;background:var(--acc)}
+.tl small{color:var(--mut);display:block}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:6px;display:none;z-index:9}
+.note{background:#fff8e8;border:1px solid #f0d9a0;border-radius:6px;padding:8px 10px;font-size:13px;margin:8px 0}
+@media(prefers-reduced-motion:reduce){.drawer{transition:none}}
+
+body.locked header,body.locked nav,body.locked main{display:none}
+#login{display:none;min-height:100vh;place-items:center;padding:16px;background:linear-gradient(160deg,var(--ink) 0 42%,var(--bg) 42%)}
+body.locked #login{display:grid}
+.lbox{width:min(420px,100%);padding:26px;box-shadow:0 10px 40px #0003}
+.lbox h1{font-size:20px;margin:0 0 2px}.lbox p{margin:0 0 14px;color:var(--mut)}
+.lbox .btn{width:100%;padding:10px;margin-top:4px}
+.lerr{color:var(--bad);min-height:20px;font-size:13px;margin:4px 0}
+.demo{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--mut)}
+.demo button{display:block;width:100%;text-align:left;margin-top:6px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 10px;cursor:pointer;color:var(--ink)}
+.out{background:transparent;color:#fff;border:1px solid #3d4d7a;border-radius:6px;padding:6px 12px;cursor:pointer}
+</style></head>
+<body class="locked">
+<section id="login"><form class="card lbox" id="lf" autocomplete="off">
+<h1>Security Deposit / FDR Management Portal</h1>
+<p>AICTE Regulation Bureau · Sign in to continue</p>
+<label>User ID<input id="lu" required placeholder="e.g. officer1"></label>
+<label>Password<input id="lp" type="password" required placeholder="demo123"></label>
+<div class="lerr" id="le" role="alert"></div>
+<button class="btn a" type="submit">Sign in</button>
+<div class="demo">Prototype demo accounts (password demo123)
+<button type="button" data-u="officer1">officer1 · AICTE Officer (Regulation Bureau)</button>
+<button type="button" data-u="sunrise1">sunrise1 · Institution: Sunrise Institute of Technology</button></div>
+</form></section>
+<header>
+ <div><h1>Security Deposit / FDR Management Portal<small>AICTE Regulation Bureau · Prototype with sample data</small></h1></div>
+ <div class="sp"></div>
+ <div style="color:#aeb8d1;font-size:13px">Signed in as <b id="who" style="color:#fff"></b></div>
+ <select id="role" hidden><option value="officer"></option><option value="inst"></option></select>
+ <button class="out" id="so" type="button">Sign out</button>
+</header>
+<nav id="nav"></nav>
+<main id="app"></main>
+<div class="drawer" id="drawer" aria-live="polite"></div>
+<div class="modal" id="modal"></div>
+<div id="toast"></div>
+
+<script>
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+const D=n=>{const d=new Date(TODAY);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
+const fmt=s=>new Date(s).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+const inr=n=>'₹'+Number(n).toLocaleString('en-IN');
+const days=s=>Math.round((new Date(s)-TODAY)/864e5);
+const ME='Sunrise Institute of Technology';
+const log=(f,who,what)=>f.hist.unshift({t:new Date().toLocaleString('en-IN'),who,what});
+let ID=9;
+const mk=(id,inst,no,bank,amt,iss,mat,ver,state,ren,docs)=>({id,inst,no,bank,amt,iss,mat,ver,state,ren,docs,obs:[],
+ hist:[{t:fmt(iss),who:inst,what:'FDR submitted with scanned receipt'}]});
+let F=[
+ mk(1,ME,'FDR/2201/55871','State Bank of India',1000000,D(-700),D(40),'bank','active',1,['FDR scan','Bank letter','Lien note']),
+ mk(2,ME,'FDR/2210/98114','Canara Bank',500000,D(-300),D(430),'inst','active',0,['FDR scan']),
+ mk(3,'Lakeview College of Engineering','FDR/1904/33421','HDFC Bank',1000000,D(-900),D(-12),'bank','active',0,['FDR scan','Bank letter']),
+ mk(4,'Godavari Technical Campus','FDR/2312/77120','Union Bank of India',2500000,D(-200),D(160),'flag','active',0,['FDR scan']),
+ mk(5,'Eastern Hills Polytechnic','FDR/2188/10456','Bank of Baroda',500000,D(-500),D(75),'bank','active',2,['FDR scan','Bank letter','Renewal receipt']),
+ mk(6,'Coastal Institute of Management','FDR/2090/66012','ICICI Bank',1000000,D(-1000),D(-60),'bank','release_req',0,['FDR scan','Bank letter','Release request','NOC']),
+ mk(7,'Vizag Pharma Sciences College','FDR/1999/41873','Indian Bank',500000,D(-1300),D(-200),'bank','released',1,['FDR scan','Bank letter','Discharge order']),
+ mk(8,'Hilltop School of Architecture','FDR/2275/90231','Punjab National Bank',1500000,D(-100),D(25),'inst','active',0,['FDR scan'])
+];
+F[3].obs.push('Amount on scan differs from amount entered (₹25,00,000 vs ₹2,50,000). Clarification sought.');
+F[3].hist.unshift({t:fmt(D(-5)),who:'AICTE Officer',what:'Flagged discrepancy: amount mismatch'});
+F[5].hist.unshift({t:fmt(D(-3)),who:'Coastal Institute of Management',what:'Release request submitted'});
+
+const status=f=>{if(f.state==='released')return'Released';if(f.state==='release_req')return'Pending';
+ const d=days(f.mat);return d<0?'Matured':d<=90?'Expiring':'Active'};
+const label={Pending:'Release pending'};
+const pill=f=>{const s=status(f);return `<span class="pill ${s}">${label[s]||s}</span>`};
+const verTxt={bank:'<span class="v-bank">✔ Confirmed by bank</span>',inst:'<span class="v-inst">● Submitted by institution only</span>',flag:'<span class="v-flag">⚠ Discrepancy flagged</span>'};
+const isO=()=>role.value==='officer';
+const vis=()=>isO()?F:F.filter(f=>f.inst===ME);
+const toast=m=>{const t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',2600)};
+
+let tab='dash',flt='all',q='';
+const tabs=()=>isO()?[['dash','Dashboard'],['repo','FDR repository'],['alerts','Alerts & reminders'],['reports','Reports'],['audit','Audit trail']]
+ :[['dash','My dashboard'],['repo','My FDRs'],['alerts','Reminders']];
+function nav(){document.getElementById('nav').innerHTML=tabs().map(([k,n])=>`<button class="${k===tab?'on':''}" onclick="go('${k}')">${n}</button>`).join('')}
+function go(k,f){tab=k;if(f)flt=f;closeD();render()}
+role.onchange=()=>{tab='dash';flt='all';closeD();render()};
+
+function counts(){const l=vis(),c={active:0,exp:0,mat:0,ren:0,rel:0,pen:0};
+ l.forEach(f=>{const s=status(f);if(s==='Active')c.active++;if(s==='Expiring')c.exp++;if(s==='Matured')c.mat++;if(s==='Released')c.rel++;if(s==='Pending')c.pen++;if(f.ren>0)c.ren++});return c}
+function alerts(){const out=[];vis().forEach(f=>{const s=status(f),d=days(f.mat);
+ if(s==='Matured')out.push([0,'bad',`${f.inst}: FDR ${f.no} matured ${-d} days ago. Renewal or replacement overdue.`,f.id]);
+ else if(s==='Expiring')out.push([d<=30?1:2,d<=30?'bad':'warn',`${f.inst}: FDR ${f.no} matures in ${d} days (${fmt(f.mat)}).`,f.id]);
+ if(f.ver==='flag')out.push([1,'bad',`${f.inst}: discrepancy flagged on ${f.no}. Awaiting clarification.`,f.id]);
+ if(f.ver==='inst'&&isO()&&s!=='Released')out.push([3,'info',`${f.no} is not yet verified with the issuing bank.`,f.id]);
+ if(s==='Pending')out.push([2,'info',`Release request for ${f.no} awaiting officer decision.`,f.id])});
+ return out.sort((a,b)=>a[0]-b[0])}
+const alertHTML=l=>l.length?l.map(a=>`<div class="alert"><i class="dot" style="background:var(--${a[1]==='info'?'info':a[1]})"></i><div>${a[2]} <a href="#" onclick="openD(${a[3]});return false">Open</a></div></div>`).join(''):'<p style="color:var(--mut)">No alerts. All instruments are on track.</p>';
+
+function render(){nav();const el=document.getElementById('app');
+ if(tab==='dash')el.innerHTML=dash();else if(tab==='repo')el.innerHTML=repo();
+ else if(tab==='alerts')el.innerHTML=`<h2>Alerts & reminders</h2><div class="card">${alertHTML(alerts())}</div><p class="note">Reminders fire at 90, 60, 30 and 7 days before maturity and daily once overdue. Thresholds are configurable by the Regulation Bureau.</p>`;
+ else if(tab==='reports')el.innerHTML=reports();else el.innerHTML=auditV()}
+
+function dash(){const c=counts(),l=vis();
+ const K=(n,t,col,f)=>`<button class="kpi" style="--c:${col}" onclick="go('repo',${f?`'${f}'`:"'all'"})"><b>${n}</b><span>${t}</span></button>`;
+ const tot=l.filter(f=>f.state!=='released').reduce((s,f)=>s+f.amt,0);
+ const b=[0,0,0,0,0];l.filter(f=>f.state==='active').forEach(f=>{const d=days(f.mat);b[d<0?0:d<=30?1:d<=90?2:d<=365?3:4]++});
+ const mx=Math.max(...b,1),bl=['Overdue','≤30 d','31–90 d','3–12 mo','>12 mo'];
+ return `<h2>${isO()?'Overview of security deposits & FDRs':'Your security deposits & FDRs'}</h2>
+ <div class="grid k6">${K(c.active,'Active','var(--ok)','Active')}${K(c.exp,'Expiring in 90 days','var(--warn)','Expiring')}${K(c.mat,'Matured, action needed','var(--bad)','Matured')}${K(c.ren,'Renewed at least once','var(--info)','renewed')}${K(c.pen,'Release pending','var(--info)','Pending')}${K(c.rel,'Released','var(--mut)','Released')}</div>
+ <div class="grid two" style="margin-top:12px">
+ <div class="card"><b>Live deposit value held</b><div style="font-size:24px;margin:4px 0 12px">${inr(tot)}</div>
+ <b style="font-size:13px">Instruments by time to maturity</b><div class="bar">${b.map((n,i)=>`<div><i style="height:${n/mx*90}px;${i===0?'background:var(--bad)':''}"></i>${n}<br>${bl[i]}</div>`).join('')}</div></div>
+ <div class="card"><b>Needs attention</b>${alertHTML(alerts().slice(0,5))}</div></div>`}
+
+function repo(){let l=vis();
+ if(flt==='renewed')l=l.filter(f=>f.ren>0);else if(flt!=='all')l=l.filter(f=>status(f)===flt);
+ if(q)l=l.filter(f=>(f.inst+f.no+f.bank).toLowerCase().includes(q.toLowerCase()));
+ return `<h2>${isO()?'FDR repository':'My FDRs'}</h2><div class="row">
+ <input id="q" placeholder="Search institution, FDR number or bank" value="${q}" oninput="q=this.value;rr()" style="flex:1;min-width:200px" aria-label="Search">
+ <select onchange="flt=this.value;rr()" aria-label="Filter"><option value="all">All statuses</option>${['Active','Expiring','Matured','Pending','Released','renewed'].map(s=>`<option value="${s}" ${flt===s?'selected':''}>${s==='renewed'?'Renewed':label[s]||s}</option>`).join('')}</select>
+ ${isO()?'':'<button class="btn a" onclick="addForm()">Submit new FDR</button>'}
+ ${isO()?'<button class="btn s" onclick="csv()">Export CSV</button>':''}</div>
+ <div class="card tw" style="padding:0"><table><thead><tr><th>Institution</th><th>FDR no. & bank</th><th>Amount</th><th>Matures</th><th>Status</th><th>Verification</th></tr></thead><tbody>
+ ${l.map(f=>`<tr onclick="openD(${f.id})"><td>${f.inst}</td><td>${f.no}<br><small style="color:var(--mut)">${f.bank}</small></td><td>${inr(f.amt)}</td><td>${fmt(f.mat)}</td><td>${pill(f)}</td><td>${verTxt[f.ver]}</td></tr>`).join('')||'<tr><td colspan="6">No FDRs match. Clear the filter or search.</td></tr>'}</tbody></table></div>`}
+function rr(){const x=document.getElementById('q'),p=x&&x.selectionStart;document.getElementById('app').innerHTML=repo();const n=document.getElementById('q');if(n&&x){n.focus();n.setSelectionRange(p,p)}}
+
+function reports(){const l=vis();
+ const sec=(t,a,fn)=>`<div class="card"><b>${t} (${a.length})</b><ul style="margin:8px 0 0;padding-left:18px">${a.map(fn).join('')||'<li>None</li>'}</ul></div>`;
+ return `<h2>Management reports</h2><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+ ${sec('Pending bank verification',l.filter(f=>f.ver==='inst'&&f.state!=='released'),f=>`<li>${f.inst} · ${f.no}</li>`)}
+ ${sec('Upcoming maturities (90 days)',l.filter(f=>status(f)==='Expiring').sort((a,b)=>a.mat<b.mat?-1:1),f=>`<li>${f.inst} · ${fmt(f.mat)} (${days(f.mat)} d)</li>`)}
+ ${sec('Overdue renewals',l.filter(f=>status(f)==='Matured'),f=>`<li>${f.inst} · ${f.no}</li>`)}
+ ${sec('Missing documents',l.filter(f=>f.state!=='released'&&!f.docs.includes('Bank letter')),f=>`<li>${f.inst} · bank confirmation letter missing</li>`)}
+ ${sec('Discrepancy cases',l.filter(f=>f.ver==='flag'),f=>`<li>${f.inst} · ${f.no}</li>`)}
+ ${sec('Release / refund requests',l.filter(f=>f.state==='release_req'),f=>`<li>${f.inst} · ${inr(f.amt)}</li>`)}</div>`}
+
+function auditV(){const all=F.flatMap(f=>f.hist.map(h=>({...h,f:f.no})));
+ return `<h2>Audit trail</h2><div class="card tw" style="padding:0"><table><thead><tr><th>When</th><th>Who</th><th>Action</th><th>FDR</th></tr></thead><tbody>${all.slice(0,60).map(h=>`<tr><td>${h.t}</td><td>${h.who}</td><td>${h.what}</td><td>${h.f}</td></tr>`).join('')}</tbody></table></div><p class="note">Every submission, verification, change, approval and release is recorded with user and time. Entries cannot be edited.</p>`}
+
+function openD(id){const f=F.find(x=>x.id===id),s=status(f),O=isO(),dd=document.getElementById('drawer');
+ const act=[];
+ if(O&&f.ver!=='bank'&&f.state!=='released')act.push(`<button class="btn" onclick="verify(${id})">Verify with bank</button>`);
+ if(O&&f.ver!=='flag'&&f.state!=='released')act.push(`<button class="btn s" onclick="flag(${id})">Flag discrepancy</button>`);
+ if(O)act.push(`<button class="btn s" onclick="obs(${id})">Add scrutiny note</button>`);
+ if(!O&&f.state==='active'&&s!=='Released')act.push(`<button class="btn" onclick="renewForm(${id})">Submit renewal</button>`,`<button class="btn s" onclick="relReq(${id})">Request release</button>`);
+ if(O&&f.state==='release_req')act.push(`<button class="btn a" onclick="approve(${id})">Approve release</button>`,`<button class="btn d" onclick="rej(${id})">Reject request</button>`);
+ dd.innerHTML=`<div class="row"><b style="font-size:16px;flex:1">${f.no}</b><button class="btn s" onclick="closeD()">Close</button></div>
+ <p style="margin:0">${f.inst}</p><p>${pill(f)} &nbsp;${verTxt[f.ver]}</p>
+ <dl><dt>Issuing bank</dt><dd>${f.bank}</dd><dt>Amount</dt><dd>${inr(f.amt)}</dd><dt>Issue date</dt><dd>${fmt(f.iss)}</dd><dt>Maturity date</dt><dd>${fmt(f.mat)} (${days(f.mat)<0?-days(f.mat)+' days ago':days(f.mat)+' days left'})</dd><dt>Renewals</dt><dd>${f.ren}</dd><dt>Documents</dt><dd>${f.docs.join(', ')}</dd></dl>
+ ${f.ver==='inst'?'<div class="note">Details come from the institution. They have not been confirmed by the issuing bank.</div>':''}
+ ${f.obs.length?`<b>Scrutiny notes</b><ul>${f.obs.map(o=>`<li>${o}</li>`).join('')}</ul>`:''}
+ <div class="row">${act.join('')}</div><b>History</b><div class="tl">${f.hist.map(h=>`<p>${h.what}<small>${h.who} · ${h.t}</small></p>`).join('')}</div>`;
+ dd.classList.add('open')}
+function closeD(){document.getElementById('drawer').classList.remove('open')}
+const who=()=>isO()?'AICTE Officer':ME;
+const upd=(id,fn,m)=>{const f=F.find(x=>x.id===id);fn(f);toast(m);render();openD(id)};
+const verify=id=>upd(id,f=>{f.ver='bank';if(!f.docs.includes('Bank letter'))f.docs.push('Bank letter');log(f,who(),'Verified with issuing bank (simulated bank API): details match')},'Bank confirmed the FDR details');
+const flag=id=>{const t=prompt('What is the discrepancy?');if(t)upd(id,f=>{f.ver='flag';f.obs.push(t);log(f,who(),'Flagged discrepancy: '+t)},'Discrepancy flagged and institution notified')};
+const obs=id=>{const t=prompt('Scrutiny note');if(t)upd(id,f=>{f.obs.push(t);log(f,who(),'Scrutiny note added')},'Note saved')};
+const relReq=id=>upd(id,f=>{f.state='release_req';log(f,who(),'Release request submitted')},'Release request sent to the Regulation Bureau');
+const approve=id=>upd(id,f=>{f.state='released';log(f,who(),'Release approved by competent authority. Discharge order generated');f.docs.push('Discharge order')},'Release approved');
+const rej=id=>{const t=prompt('Reason for rejection');if(t)upd(id,f=>{f.state='active';f.obs.push('Release rejected: '+t);log(f,who(),'Release request rejected: '+t)},'Request rejected, institution notified')};
+
+function modal(h){const m=document.getElementById('modal');m.innerHTML=`<div class="card">${h}</div>`;m.classList.add('open')}
+const closeM=()=>document.getElementById('modal').classList.remove('open');
+function addForm(){modal(`<h2>Submit new FDR</h2><label>FDR number<input id="a1" placeholder="FDR/2301/12345"></label>
+ <label>Issuing bank<select id="a2">${['State Bank of India','Canara Bank','HDFC Bank','ICICI Bank','Union Bank of India','Punjab National Bank'].map(b=>`<option>${b}</option>`).join('')}</select></label>
+ <label>Amount (₹)<input id="a3" type="number" min="1" placeholder="1000000"></label>
+ <label>Issue date<input id="a4" type="date"></label><label>Maturity date<input id="a5" type="date"></label>
+ <label>Upload FDR scan<input id="a6" type="file"></label><div class="row"><button class="btn" onclick="addFDR()">Submit FDR</button><button class="btn s" onclick="closeM()">Cancel</button></div><div id="err" style="color:var(--bad)"></div>`)}
+function addFDR(){const g=i=>document.getElementById(i).value,e=t=>document.getElementById('err').textContent=t;
+ if(!g('a1')||!g('a3')||!g('a4')||!g('a5'))return e('Fill the FDR number, amount, issue date and maturity date.');
+ if(g('a5')<=g('a4'))return e('Maturity date must be after the issue date.');
+ if(F.some(f=>f.no===g('a1')))return e('This FDR number is already on record.');
+ const f=mk(ID++,ME,g('a1'),g('a2'),+g('a3'),g('a4'),g('a5'),'inst','active',0,g('a6')?['FDR scan']:[]);
+ if(!g('a6'))f.obs.push('FDR scan missing');F.unshift(f);closeM();toast('FDR submitted. Awaiting bank verification');tab='repo';render()}
+function renewForm(id){modal(`<h2>Submit renewal / replacement</h2><label>New maturity date<input id="r1" type="date"></label><label>Upload renewed FDR<input type="file"></label>
+ <div class="row"><button class="btn" onclick="renew(${id})">Submit renewal</button><button class="btn s" onclick="closeM()">Cancel</button></div>`)}
+function renew(id){const v=document.getElementById('r1').value;if(!v||v<=D(0))return toast('Choose a future maturity date');closeM();
+ upd(id,f=>{f.mat=v;f.ren++;f.ver='inst';f.docs.push('Renewal receipt');log(f,who(),'Renewed FDR submitted. New maturity '+fmt(v))},'Renewal submitted. Awaiting bank verification')}
+function csv(){const r=[['Institution','FDR no','Bank','Amount','Issue','Maturity','Status','Verification']].concat(F.map(f=>[f.inst,f.no,f.bank,f.amt,f.iss,f.mat,status(f),f.ver]));
+ const b=new Blob([r.map(x=>x.map(c=>`"${c}"`).join(',')).join('\n')],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='fdr_report.csv';a.click()}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeM()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeM();closeD()}});
+const ACC={officer1:{r:'officer',n:'AICTE Officer (Regulation Bureau)'},sunrise1:{r:'inst',n:'Institution: Sunrise Institute of Technology'}};
+document.querySelectorAll('.demo button').forEach(b=>b.onclick=()=>{lu.value=b.dataset.u;lp.value='demo123'});
+lf.onsubmit=e=>{e.preventDefault();const a=ACC[lu.value.trim().toLowerCase()];
+ if(!a||lp.value!=='demo123'){le.textContent='Invalid user ID or password.';return}
+ le.textContent='';role.value=a.r;who.textContent=a.n;document.body.classList.remove('locked');tab='dash';flt='all';closeD();render();scrollTo(0,0)};
+so.onclick=()=>{document.body.classList.add('locked');closeD();closeM();lp.value='';lu.value=''};
+</script></body></html>
